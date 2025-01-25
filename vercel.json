@@ -9,7 +9,7 @@
   "routes": [
     {
       "src": "/api/generate",
-      "dest": "/api/generate.go"
+      "dest": "/main.go"
     },
     {
       "src": "/(.*)",
