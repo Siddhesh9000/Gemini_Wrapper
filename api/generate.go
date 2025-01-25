@@ -15,7 +15,7 @@ import (
 
 // HomeHandler serves the home page
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("static/index.html"))
+	tmpl := template.Must(template.ParseFiles("public/index.html"))
 	tmpl.Execute(w, nil)
 }
 
