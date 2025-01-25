@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gemini Chat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 90%;
+      height: 90%;
+      overflow: hidden;
+    }
+
+    .input-group-text {
+      cursor: pointer;
+    }
+
+    .result-container {
+      margin-top: 2rem;
+      background: #e9ecef;
+      padding: 1rem;
+      border-radius: 8px;
+      display: none;
+    }
+
+    .result-container.active {
+      display: block;
+    }
+
+    .spinner-container {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      margin-top: 2rem;
+    }
+
+    .spinner-container.active {
+      display: flex;
+    }
+
+    pre {
+      background: #f8f9fa;
+      padding: 1rem;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow: auto;
+    }
+
+    .image-preview {
+      max-width: 50px;
+      max-height: 50px;
+      margin-right: 10px;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cancel-image-button {
+      cursor: pointer;
+      padding: 3px;
+      background-color: #f8f9fa;
+      border: none;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="text-center">Gemini Chat</h1>
+    <form id="promptForm" class="mt-4">
+      <div class="input-group mb-3">
+        <span class="input-group-text" id="uploadImage">
+          <i class="fas fa-image"></i>
+        </span>
+        <input type="text" class="form-control" id="prompt" name="prompt" placeholder="Enter your prompt" required>
+        <button class="btn btn-primary" type="submit" id="sendButton">
+          <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+      <input type="file" id="imageInput" accept="image/*" style="display: none;">
+      <!-- Image preview inside the search bar -->
+      <div class="input-group-append" id="imagePreviewContainer" style="display: none;">
+        <img id="imagePreview" class="image-preview" src="" alt="Image Preview">
+        <button type="button" id="cancelImageButton" class="cancel-image-button"><i class="fas fa-times"></i></button>
+      </div>
+    </form>
+    <div class="spinner-container" id="spinner">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div id="result" class="result-container">
+      <div class="result-header">
+        <h5>Generated Content:</h5>
+        <button class="btn btn-secondary copy-button mb-2" onclick="copyToClipboard()">Copy Code</button>
+      </div>
+      <pre><code id="generatedContent"></code></pre>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const uploadImage = document.getElementById('uploadImage');
+    const imageInput = document.getElementById('imageInput');
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const cancelImageButton = document.getElementById('cancelImageButton');
+
+    uploadImage.addEventListener('click', function () {
+      imageInput.click();
+    });
+
+    imageInput.addEventListener('change', function (event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          imagePreview.src = e.target.result;
+          imagePreviewContainer.style.display = 'flex'; // Show the image preview container
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Function to clear the image selection
+    cancelImageButton.addEventListener('click', function () {
+      imageInput.value = ''; // Clear the file input
+      imagePreview.src = ''; // Clear the image preview source
+      imagePreviewContainer.style.display = 'none'; // Hide the image preview container
+    });
+
+    document.getElementById('promptForm').addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const prompt = document.getElementById('prompt').value;
+      const spinner = document.getElementById('spinner');
+      const resultContainer = document.getElementById('result');
+      const generatedContent = document.getElementById('generatedContent');
+      const sendButton = document.getElementById('sendButton');
+      const formData = new FormData();
+
+      formData.append('prompt', prompt);
+      if (imageInput.files.length > 0) {
+        formData.append('image', imageInput.files[0]);
+      }
+
+      // Show spinner and hide result container
+      spinner.classList.add('active');
+      resultContainer.classList.remove('active');
+
+      sendButton.classList.add('btn-secondary');
+
+      const response = await fetch('/generate', {
+        method: 'POST',
+        body: formData,
+      });
+
+      // Hide spinner
+      spinner.classList.remove('active');
+      sendButton.classList.remove('btn-secondary');
+
+      if (response.ok) {
+        const text = await response.text();
+        generatedContent.textContent = text.replace('Generated Content: ', '');
+        resultContainer.classList.add('active');
+      } else {
+        generatedContent.textContent = 'Failed to generate content. Please try again.';
+        resultContainer.classList.add('active');
+      }
+    });
+
+    function copyToClipboard() {
+      const content = document.getElementById('generatedContent').textContent;
+      navigator.clipboard.writeText(content).then(() => {
+        alert('Code copied to clipboard');
+      });
+    }
+  </script>
+</body>
+
+</html>
