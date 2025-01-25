@@ -7,7 +7,7 @@ Gemini Chat is a web application that allows users to generate content based on 
 1. **Clone the repository:**
 
    ```bash
-   [git clone https://github.com/your-username/Gemini-Chat.git](https://github.com/Siddhesh9000/Gemini_Wrapper.git)
+   [git clone https://github.com/Siddhesh9000/Gemini-Chat.git](https://github.com/Siddhesh9000/Gemini_Wrapper.git)
 
 2. **Navigate to the project directory:**
   cd Gemini-Chat
