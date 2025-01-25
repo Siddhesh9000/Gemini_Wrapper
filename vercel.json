@@ -1,20 +1,19 @@
 {
-    "version": 2,
-    "builds": [
-      {
-        "src": "api/generate.go",
-        "use": "@vercel/go"
-      }
-    ],
-    "routes": [
-      {
-        "src": "/api/generate",
-        "dest": "/api/generate.go"
-      },
-      {
-        "src": "/(.*)",
-        "dest": "/static/$1"
-      }
-    ]
-  }
-  
+  "version": 2,
+  "builds": [
+    {
+      "src": "main.go",
+      "use": "@vercel/go"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/generate",
+      "dest": "/api/generate.go"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/static/$1"
+    }
+  ]
+}
