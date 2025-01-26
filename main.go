@@ -1,31 +1,28 @@
-package handler
+package main
 
 import (
-    "fmt"
-    "net/http"
-    "os"
+	"log"
+	"os"
 
-    "github.com/joho/godotenv"
-    "main/server"
+	"main/server"
+
+	"github.com/joho/godotenv"
 )
 
-// Handler function that Vercel will call
-func Handler(w http.ResponseWriter, r *http.Request) {
-    // Load environment variables from .env file
-    err := godotenv.Load()
-    if err != nil {
-        http.Error(w, "Error loading .env file", http.StatusInternalServerError)
-        return
-    }
+func main() {
+	// Load environment variables from .env file
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-    // Check for Vercel environment (only used in Vercel deployment)
-    isVercel := os.Getenv("VERCEL")
-    if isVercel != "" {
-        // Skip local server in Vercel environment, handle via generate.go
-        fmt.Println("Running in Vercel, using generate.go")
-        server.GenerateHandler(w, r) // Directly using generate handler for requests
-    } else {
-        // Start the local server (for development)
-        server.StartServer()
-    }
+// Check for Vercel environment (only used in Vercel deployment)
+isVercel := os.Getenv("VERCEL")
+if isVercel != "" {
+	// Skip local server in Vercel environment, handle via generate.go
+	log.Println("Running in Vercel, using generate.go")
+} else {
+	// Start the local server (for development)
+	server.StartServer()
+}
 }
